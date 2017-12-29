@@ -2,3 +2,4 @@ tmp
 data
 .DS_Store
 node_modules
+DB_FILEPATH
