@@ -1,3 +1,5 @@
+.PHONY: show_db_file
+
 base_dir = ~/Library/Application\ Support/MobileSync/Backup
 
 target_dir = $(shell ls -t $(base_dir))
