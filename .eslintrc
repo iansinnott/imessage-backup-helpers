@@ -1,1 +1,6 @@
-{"extends": ["zen/base","zen/react"]}
+{
+  "extends": ["zen/base","zen/react"],
+  "rules": {
+    "indent": [2, 2, { "SwitchCase": 1 }]
+  }
+}
