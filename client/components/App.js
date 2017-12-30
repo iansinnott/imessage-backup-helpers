@@ -1,6 +1,7 @@
 import * as React from 'react';
+import { connect } from 'react-redux';
 
-export default class App extends React.Component {
+class App extends React.Component {
   render() {
     return (
       <div className='App'>
@@ -9,3 +10,5 @@ export default class App extends React.Component {
     );
   }
 }
+
+export default connect()(App);
