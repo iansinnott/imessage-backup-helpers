@@ -5,6 +5,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const sqlite = require('sqlite');
+const cors = require('cors');
 
 const app = express();
 
@@ -61,6 +62,7 @@ rest.get('/messages', (req, res, next) => {
 app.set('port', process.env.PORT || 3000);
 
 app.use(bodyParser.json({ type: '*/*' })); // Parse everything. This is a JSON server
+app.use(cors());
 app.use(morgan(isDev ? 'dev' : 'combined'));
 
 app.use('/rest', rest);
