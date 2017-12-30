@@ -4,7 +4,8 @@ const http = require('http');
 const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
-const sqlite = require('sqlite');
+const { OPEN_READONLY } = require('sqlite3'); // sqlite3 is underlying engine
+const sqlite = require('sqlite'); // sqlite is promise-based wrapper around sqlite3
 const cors = require('cors');
 
 const app = express();
@@ -27,8 +28,15 @@ const DB_FILENAME = fs
   .readFileSync(path.resolve(__dirname, '../DB_FILEPATH'), { encoding: 'utf8' })
   .trim();
 
-const dbp = sqlite.open(DB_FILENAME, { verbose: isDev });
+const dbp = sqlite.open(DB_FILENAME, {
+  verbose: isDev,
+  mode: OPEN_READONLY, // So far there are no write ops so this seems safest
 
+  // This is the default, but since the db doesn't change this should prob be
+  // true. Just didn't want odd cache related bugs and I'm not sure how this
+  // would respond to whatever update method I create later to change hte db
+  cached: false,
+});
 
 /* REST
  * ======================================================================= */
@@ -65,9 +73,9 @@ rest.get('/messages', (req, res, next) => {
  * NOTE: SQLite does have full text search capabilities which would likely make
  * this much faster: https://www.sqlite.org/fts5.html
  *
- * Example search url: /rest/messages/search?q=hello&page_size=2&page=2
+ * Example search url: /rest/search?q=hello&page_size=2&page=2
  */
-rest.get('/messages/search', (req, res, next) => {
+rest.get('/search', (req, res, next) => {
   const offset = Number(req.query.page || 1) - 1;
   const pageSize = Number(req.query.page_size || DEFAULT_PAGE_SIZE);
   const searchTerm = req.query.q;
