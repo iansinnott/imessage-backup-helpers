@@ -56,6 +56,57 @@ rest.get('/messages', (req, res, next) => {
     });
 });
 
+/**
+ * NOTE: For some reason sqlite seems to be doing something odd with quotes, so
+ * trying to insert quotes around the like term didn't work. However, it does
+ * work without the quotes so that's what happened here. See:
+ * https://github.com/mapbox/node-sqlite3/issues/545
+ *
+ * NOTE: SQLite does have full text search capabilities which would likely make
+ * this much faster: https://www.sqlite.org/fts5.html
+ *
+ * Example search url: /rest/messages/search?q=hello&page_size=2&page=2
+ */
+rest.get('/messages/search', (req, res, next) => {
+  const offset = Number(req.query.page || 1) - 1;
+  const pageSize = Number(req.query.page_size || DEFAULT_PAGE_SIZE);
+  const searchTerm = req.query.q;
+
+  if (pageSize < 1 || pageSize > 1000) {
+    const err = new HTTPError(400, 'Page size must be between 1 and 1000');
+    next(err);
+    return;
+  }
+
+  if (!searchTerm) {
+    const err = new HTTPError(400, 'Must provide a search term');
+    next(err);
+    return;
+  }
+
+  const likeQuery = `%${searchTerm}%`; // See NOTE
+  console.log('searching for ', likeQuery);
+
+  dbp.then(db => db.all(
+    `
+      SELECT * FROM all_messages
+      WHERE text like ?
+      LIMIT ?
+      OFFSET ?;
+    `.trim(),
+    likeQuery,
+    pageSize,
+    offset
+  ))
+    .then(rows => res.send({
+      data: rows,
+      error: null,
+    }))
+    .catch(err => {
+      next(err);
+    });
+});
+
 
 /* App
  * ======================================================================= */
