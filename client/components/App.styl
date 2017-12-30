@@ -1,0 +1,67 @@
+blue = #1F4B99
+teal = #6B9FA1
+beige = #FFE39F
+orange = #D78742
+red = #9E2B0E
+
+white-bg = #F5F8FA
+white-border = rgba(16,22,26,.2)
+
+helvetica = 'Helvetica Neue', Helvetica, sans-serif
+
+*
+  box-sizing border-box
+
+html
+body
+  height 100%
+
+body
+  background white-bg
+  font-family helvetica
+
+.MessageList
+  padding 20px
+
+.Message
+  border 1px solid white-border
+  background white
+  margin-bottom 5px
+
+.text
+  background white
+  padding 10px
+
+.SearchBox
+  padding 20px
+  position relative
+
+.Spinner
+  position absolute
+  top 50%
+  right 25px
+  transform translateY(-50%)
+
+.count
+  margin-bottom 10px
+
+.disabled
+  pointer-events none
+  opacity 0.6
+
+input.search
+  padding 5px 20px
+  width 100%
+  font-size 32px
+  border-radius 30px
+  outline none
+  border solid 1px white-border
+  font-weight 300
+  &:focus
+    border 1px solid blue
+
+h1.loading
+  padding 20px
+  font-weight 100
+  margin 0
+

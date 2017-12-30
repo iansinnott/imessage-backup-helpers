@@ -54,9 +54,18 @@ rest.get('/messages', (req, res, next) => {
     return;
   }
 
-  dbp.then(db => db.all('SELECT * FROM all_messages LIMIT ? OFFSET ?;', pageSize, offset))
-    .then(rows => res.send({
+  dbp.then(db => Promise.all([
+    db.all('SELECT * FROM all_messages LIMIT ? OFFSET ?;', pageSize, offset),
+    db.get('SELECT count(*) as "count" from all_messages;')
+  ]))
+    .then(([ rows, { count } ]) => res.send({
       data: rows,
+      meta: {
+        count,
+        page: offset + 1,
+        pageSize,
+        pageCount: Math.ceil(count / pageSize)
+      },
       error: null,
     }))
     .catch(err => {

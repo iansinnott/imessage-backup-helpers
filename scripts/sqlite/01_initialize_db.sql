@@ -11,10 +11,10 @@
 DROP VIEW IF EXISTS all_messages;
 CREATE VIEW all_messages AS
   SELECT
-    datetime(m.date + 978307200, 'unixepoch', 'localtime') as timestamp,
-    m.handle_id,
-    h.id as handle,
-    h.uncanonicalized_id as uncanonicalized_handle,
+    m.ROWID as "rowid", -- Not sure if this lowercasing is necessary
+    datetime(m.date + 978307200, 'unixepoch', 'localtime') as "date",
+    h.id as "handle",
+    h.uncanonicalized_id as "uncanonicalized_handle",
     h.service,
     m.is_from_me,
     m.text,
@@ -22,7 +22,7 @@ CREATE VIEW all_messages AS
     m.account,
     c.account_login,
     c.chat_identifier,
-    c.guid as chat_guid
+    c.guid as "chat_guid"
   from message m
     left join handle h on h.ROWID = m.handle_id
     left join chat_message_join j ON m.ROWID = j.message_id

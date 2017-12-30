@@ -7,7 +7,7 @@ import createStore from './createStore.js'
 const store = createStore();
 
 if (process.env.NODE_ENV === 'development') {
-  window.store = store;
+  require('./exportGlobals.js').default(window, { store });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

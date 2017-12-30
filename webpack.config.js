@@ -27,7 +27,9 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify(process.env.NODE_ENV),
-        SERVICE_URL: JSON.stringify(process.env.SERVICE_URL || 'http://localhost:3000'),
+        SERVICE_URL: JSON.stringify(
+          process.env.SERVICE_URL || 'http://localhost:3000'
+        ),
       },
     }),
     new HtmlWebpackPlugin({
@@ -49,7 +51,22 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loader: ['style-loader', 'css-loader'],
+        use: ['style-loader', 'css-loader'],
+      },
+      {
+        test: /\.styl$/,
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+              importLoaders: 2,
+              localIdentName: '[name]__[local]__[hash:base64:6]',
+            },
+          },
+          'stylus-loader',
+        ],
       },
     ],
   },

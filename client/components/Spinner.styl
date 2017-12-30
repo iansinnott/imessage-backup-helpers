@@ -1,0 +1,28 @@
+.Spinner
+  width 40px
+  height @width
+
+  .container
+    animation _spin .4s linear infinite
+    width @width
+    height @width
+
+  path
+    fill none
+
+@keyframes _spin
+  from
+    transform rotate3d(0,0,1,0deg)
+  to
+    transform rotate3d(0,0,1,360deg)
+
+path.track
+  stroke rgba(92,112,128,.2)
+  stroke-width 8px
+
+path.head
+  stroke rgba(92,112,128,.8)
+  stroke-width 8px
+  stroke-linecap round
+  transition stroke-dashoffset .2s cubic-bezier(.4,1,.75,.9)
+

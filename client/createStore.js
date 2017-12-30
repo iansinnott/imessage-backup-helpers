@@ -1,28 +1,12 @@
 import { createStore, applyMiddleware } from 'redux';
 import { createEpicMiddleware } from 'redux-observable';
-import { Observable } from 'rxjs'; // Just to make sure operators are defined
 import { createLogger } from 'redux-logger';
+import { Map } from 'immutable';
 
-const rootEpic = (action$) =>
-  action$.ofType('PING')
-    .do(x => console.warn('JUST SAW', x))
-    .ignoreElements();
-
-const rootReducer = (state = 'PING', action) => {
-  const { type, payload } = action;
-
-  switch (type) {
-    case 'PING':
-      return 'PONG';
-    case 'PONG':
-      return 'PING';
-    default:
-      return state;
-  }
-};
+import reducer, { epic } from './modules';
 
 export default () => {
-  const middleware = [createEpicMiddleware(rootEpic, { dependencies: {} })];
+  const middleware = [createEpicMiddleware(epic, { dependencies: {} })];
 
   if (process.env.NODE_ENV === 'development') {
     middleware.push(
@@ -43,5 +27,5 @@ export default () => {
     );
   }
 
-  return createStore(rootReducer, applyMiddleware(...middleware));
+  return createStore(reducer, Map(), applyMiddleware(...middleware));
 };
