@@ -1,6 +1,7 @@
 import * as React from 'react';
 import T from 'prop-types';
 import { Map } from 'immutable';
+import reactStringReplace from 'react-string-replace';
 
 import { connect } from 'react-redux';
 import { init } from '../modules/app';
@@ -12,6 +13,7 @@ import {
   getMessageSeq,
   getSearchTerm,
   getLoading,
+  getLastPage,
   getSearchText,
   getCount,
 } from '../modules/messages';
@@ -22,35 +24,73 @@ import s from './App.styl';
 const cx = classnames.bind(s);
 import Spinner from './Spinner.js';
 
-const Message = ({ message: m }) => {
+const Message = ({ searchTerm, message: m }) => {
+  let renderText = m.get('text');
+
+  if (searchTerm) {
+    renderText = reactStringReplace(m.get('text'), searchTerm, (match, i) => (
+      <span key={i} className={cx('hl')}>{match}</span>
+    ));
+  }
+
   return (
     <div className={cx('Message')}>
-      <div className={cx('text')}>
-        {m.get('text')}
-      </div>
+      <div className={cx('text')}>{renderText}</div>
     </div>
   );
 };
 Message.propTypes = {
   message: T.instanceOf(Map),
+  searchTerm: T.string.isRequired,
 };
+
+const LoadMoreButton = connect(
+  state => ({
+    lastPage: getLastPage(state),
+    loading: getLoading(state),
+  }),
+  { fetch },
+  ({ lastPage, loading }, { fetch }, props) => ({
+    ...props,
+    loading,
+    loadMore: () => {
+      fetch({ page: lastPage + 1 });
+    },
+  })
+)(({ loading, loadMore }) => {
+  return (
+    <div className={cx('LoadMoreButton')}>
+      {loading ? <Spinner className={cx('Spinner2')} /> : (
+        <button onClick={loadMore}>Load More</button>
+      )}
+    </div>
+  );
+});
 
 const messageListState = state => ({
   messages: getMessageSeq(state),
   count: getCount(state),
   loading: getLoading(state),
+  searchTerm: getSearchTerm(state),
 });
-const MessageList = connect(messageListState, { fetch })(props => {
-  const { messages, count, loading } = props;
+const MessageList = connect(messageListState)(props => {
+  const { searchTerm, messages, count, loading } = props;
+  const currentCount = messages.count();
 
   return (
     <div className={cx('MessageList', { disabled: loading })}>
       <div className={cx('meta')}>
         <div className={cx('count')}>
-          Showing: <strong>{messages.count()}</strong> of <strong>{count}</strong>
+          Showing: <strong>{currentCount}</strong> of{' '}
+          <strong>{count}</strong>
         </div>
       </div>
-      {messages.map(m => <Message key={m.get('rowid')} message={m} />)}
+      {messages.map(m => (
+        <Message key={m.get('rowid')} searchTerm={searchTerm} message={m} />
+      ))}
+      {currentCount < count && (
+        <LoadMoreButton />
+      )}
     </div>
   );
 });
@@ -75,7 +115,7 @@ const SearchBox = connect(
         onChange={e => setSearch(e.target.value)}
       />
       {searchTerm && (
-        <button className={cx('clear')} onClick={clearSearch}>
+        <button type='button' className={cx('clear')} onClick={clearSearch}>
           Clear Search
         </button>
       )}

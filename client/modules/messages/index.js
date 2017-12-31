@@ -174,6 +174,8 @@ export const getSearchTerm = state => state.getIn(['messages', 'searchTerm']);
 
 export const getCount = createSelector(getMeta, prop('count'));
 
+export const getLastPage = createSelector(getMeta, prop('page'));
+
 // If we need to do client side sorting, this is the place to do it
 export const getMessageSeq = createSelector(
   getMessages,
@@ -203,6 +205,7 @@ const messages = (state = OrderedMap(), action) => {
 
 const Meta = Record({
   count: 0,
+  page: 1,
 });
 
 const meta = (state = Meta(), action) => {
