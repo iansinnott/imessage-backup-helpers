@@ -45,7 +45,7 @@ deploy_static: build_prod
 	@sudo mkdir -p /opt/imessage-service
 	@sudo mkdir -p /opt/imessage-service/log
 	sudo rm -rf /opt/imessage-service/dist/*
-	sudo cp -R $(CURDIR)/dist /opt/imessage-service/dist
+	sudo cp -R $(CURDIR)/dist /opt/imessage-service/
 
 # Using port 80 for ease of use for the end user. I don't want anyone to have to
 # type the port number in, since this is designed for a non-technical audience
