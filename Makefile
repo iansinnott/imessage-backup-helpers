@@ -27,7 +27,8 @@ import_and_connect: sync_backup DB_FILEPATH
 bootstrap_db: import_and_connect
 	@./connect.sh ".read ./scripts/sqlite/01_initialize_db.sql"
 
-# Store the path to a file that can be read elsewhere
+# Store the path to a file that can be read from the node app so it knows where
+# the db is.
 DB_FILEPATH: sync_backup
 	@echo "$(shell find $(PWD)/data -iname 3d0d7e5fb2ce288813306e4d4636395e047a3d28 | head -n 1)" > DB_FILEPATH
 
@@ -35,6 +36,7 @@ show_db_file: DB_FILEPATH
 	@cat ./DB_FILEPATH
 
 build_prod:
+	@npm install
 	NODE_ENV=production SERVICE_URL='http://api.messages.archive' npm run build
 
 # NOTE: Using npm here since its ubiquitous with node, unlike yarn
@@ -46,6 +48,7 @@ deploy_static: build_prod
 
 # Using port 80 for ease of use for the end user. I don't want anyone to have to
 # type the port number in, since this is designed for a non-technical audience
+#
 # NOTE: This script assumes the server is already running, just not yet
 # configured. So `brew services start nginx` should have been run already
 nginx_config:
@@ -57,6 +60,7 @@ nginx_config:
 	@sudo nginx -s reload
 
 deploy: deploy_static nginx_config
+	@npm install -g pm2
 	@NODE_ENV=production PORT=1118 pm2 start server/index.js
 
 # Unosed. Will remove later
