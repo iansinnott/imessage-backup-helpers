@@ -45,8 +45,9 @@ const rest = express.Router();
 const DEFAULT_PAGE_SIZE = 20;
 
 rest.get('/messages', (req, res, next) => {
-  const offset = Number(req.query.page || 1) - 1;
   const pageSize = Number(req.query.page_size || DEFAULT_PAGE_SIZE);
+  const page = Number(req.query.page || 1);
+  const offset = (page - 1) * pageSize;
 
   if (pageSize < 1 || pageSize > 1000) {
     const err = new HTTPError(400, 'Page size must be between 1 and 1000');
@@ -85,8 +86,9 @@ rest.get('/messages', (req, res, next) => {
  * Example search url: /rest/search?q=hello&page_size=2&page=2
  */
 rest.get('/search', (req, res, next) => {
-  const offset = Number(req.query.page || 1) - 1;
   const pageSize = Number(req.query.page_size || DEFAULT_PAGE_SIZE);
+  const page = Number(req.query.page || 1);
+  const offset = (page - 1) * pageSize;
   const searchTerm = req.query.q;
 
   if (pageSize < 1 || pageSize > 1000) {
@@ -102,21 +104,42 @@ rest.get('/search', (req, res, next) => {
   }
 
   const likeQuery = `%${searchTerm}%`; // See NOTE
-  console.log('searching for ', likeQuery);
 
-  dbp.then(db => db.all(
-    `
-      SELECT * FROM all_messages
-      WHERE text like ?
-      LIMIT ?
-      OFFSET ?;
-    `.trim(),
-    likeQuery,
-    pageSize,
-    offset
-  ))
-    .then(rows => res.send({
+  // Ugh.. this feels very inefficent. What would be the best way to get the
+  // count as well as the data?
+  dbp.then(db => Promise.all([
+    db.all(
+      `
+        SELECT * FROM all_messages
+        WHERE text like ?
+        LIMIT ?
+        OFFSET ?;
+      `.trim(),
+      likeQuery,
+      pageSize,
+      offset
+    ),
+    db.get(
+      `
+        SELECT count(*) as "count" FROM all_messages
+        WHERE text like ?
+        LIMIT ?
+        OFFSET ?;
+      `.trim(),
+      likeQuery,
+      pageSize,
+      offset
+    ),
+  ]))
+    .then(([ rows, { count } ]) => res.send({
       data: rows,
+      meta: {
+        count,
+        page: offset + 1,
+        pageSize,
+        pageCount: Math.ceil(count / pageSize),
+        searchTerm,
+      },
       error: null,
     }))
     .catch(err => {
