@@ -21,16 +21,35 @@ First, edit the hosts file:
 127.0.0.1	api.messages.archive
 ```
 
-Then, make sure you have Nginx running. Since this project is entirely tailored to working on a Mac with an iMessage backup I'm going to assume you've installed nginx using brew. If not, then do that first: `brew install nginx`.
+Then, make sure you have Nginx running. Since this project is entirely tailored to working on a Mac with an iMessage backup I'm going to assume you've installed nginx using brew. If not, then do that first and set it to start at system startup.
+
+```
+brew update
+brew install nginx
+brew services start nginx
+```
 
 With nginx installed simply run:
 
 ```
-make deploy_prod
+make deploy
 ```
 
 *NOTE:* it will want a password since it's binding to port 80.
 
+The deploy script should handle everything and is mostly idempotent, but there may be some lingering side effects I missed.
+
+Once deployment is successful use PM2 to enable a startup script. I didn't automate this since anyone deploying should be aware of it.
+
 ```
-brew services start nginx
+pm2 startup
 ```
+
+## Re-deployment
+
+To redeploy after any code change to the server or client, simply `git pull` and:
+
+```
+make redeploy
+```
+
