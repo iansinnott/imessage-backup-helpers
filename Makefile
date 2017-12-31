@@ -10,6 +10,8 @@ target_path = $(base_dir)/$(target_dir)
 
 brew_dir = $(shell brew --prefix)
 
+service_name = imessage_service
+
 all: bootstrap_db
 
 data:
@@ -43,8 +45,8 @@ build_prod:
 deploy_static: build_prod
 	@sudo mkdir -p /opt/imessage-service
 	@sudo mkdir -p /opt/imessage-service/log
-	@sudo rm -rf /opt/imessage-service/dist/*
-	@sudo cp -R $(CURDIR)/dist /opt/imessage-service/dist
+	sudo rm -rf /opt/imessage-service/dist/*
+	sudo cp -R $(CURDIR)/dist /opt/imessage-service/dist
 
 # Using port 80 for ease of use for the end user. I don't want anyone to have to
 # type the port number in, since this is designed for a non-technical audience
@@ -61,7 +63,11 @@ nginx_config:
 
 deploy: bootstrap_db deploy_static nginx_config
 	@npm install -g pm2
-	@NODE_ENV=production PORT=1118 pm2 start server/index.js
+	NODE_ENV=production PORT=1118 pm2 start server/index.js --name="$(service_name)"
+
+# Redeploy after code changes.
+redeploy: bootstrap_db deploy_static
+	NODE_ENV=production PORT=1118 pm2 restart $(service_name)
 
 # Unosed. Will remove later
 data/$(target_dir):
