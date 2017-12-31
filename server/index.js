@@ -64,7 +64,7 @@ rest.get('/messages', (req, res, next) => {
       data: rows,
       meta: {
         count,
-        page: offset + 1,
+        page,
         pageSize,
         pageCount: Math.ceil(count / pageSize)
       },
@@ -136,7 +136,7 @@ rest.get('/search', (req, res, next) => {
       data: rows,
       meta: {
         count,
-        page: offset + 1,
+        page,
         pageSize,
         pageCount: Math.ceil(count / pageSize),
         searchTerm,
