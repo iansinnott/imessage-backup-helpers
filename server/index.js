@@ -188,7 +188,7 @@ app.get('/refresh-db', (req, res, next) => {
 
     res.send({
       data: {
-        message: 'Date successfully refreshed.',
+        message: 'All is well. Database successfully synced.',
         stdout,
         stderr,
       },
