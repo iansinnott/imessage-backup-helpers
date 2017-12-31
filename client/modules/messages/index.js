@@ -14,7 +14,7 @@ export const getUrl = (base, query) => {
 };
 
 // How many messages to fetch at a time
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 50;
 
 /* Action Types
  * ======================================================================= */
@@ -108,7 +108,7 @@ const fetchMessagesEpic = action$ => {
         .ignoreElements()
     )
     .mergeMap(({ page, pageSize }) => {
-      const url = getUrl(`${process.env.SERVICE_URL}/rest/messages`, { page, pageSize })
+      const url = getUrl(`${process.env.SERVICE_URL}/rest/messages`, { page, page_size: pageSize })
       return Observable.ajax.get(url)
         .map(prop('response'))
         .map(evolve({
@@ -139,7 +139,7 @@ const searchMessagesEpic = action$ => {
         .ignoreElements()
     )
     .switchMap(({ page, pageSize, searchText }) => {
-      const url = getUrl(`${process.env.SERVICE_URL}/rest/search`, { page, pageSize, q: searchText });
+      const url = getUrl(`${process.env.SERVICE_URL}/rest/search`, { page, page_size: pageSize, q: searchText });
       return Observable.ajax.get(url)
         .map(prop('response'))
         .map(evolve({
