@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const { exec } = require('child_process');
 const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
@@ -157,6 +158,43 @@ app.use(cors());
 app.use(morgan(isDev ? 'dev' : 'combined'));
 
 app.use('/rest', rest);
+
+// Allow refreshing the database through the API. This is simply here so I can
+// add a button to the UI that will do this. Sending this output in a prod app
+// on the web would not be great security posture. But this is meant to only run
+// on a local system and will likely make debugging easier if something goes
+// wrong. Again, given that the end user is most likely non technical
+app.get('/refresh-db', (req, res, next) => {
+  exec('make bootstrap_db', {
+    cwd: path.resolve(__dirname, '..'),
+    encoding: 'utf8',
+    maxBuffer: 200 * 1024, // This is the default. Just here for reference
+  }, (err, stdout, stderr) => {
+    if (err) {
+      if (err.message.includes('maxBuffer exceeded')) {
+        res.send({
+          data: {
+            message:
+              "Data successfully processed, however, output was too large to display. This probably just means the DB hadn't been refreshed in a while.", // eslint-disable-line quotes
+            stdout: '[Output too long for display]',
+            stderr: '',
+          },
+        });
+      } else {
+        next(err);
+      }
+      return;
+    }
+
+    res.send({
+      data: {
+        message: 'Date successfully refreshed.',
+        stdout,
+        stderr,
+      },
+    });
+  });
+});
 
 app.get('/', (req, res) => {
   res.send({

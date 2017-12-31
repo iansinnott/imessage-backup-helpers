@@ -27,6 +27,12 @@ body
 .MessageList
   padding 20px
 
+  .meta
+    display flex
+    align-items center
+    justify-content space-between
+    margin-bottom 10px
+
 .Message
   border 1px solid white-border
   background white
@@ -39,6 +45,7 @@ body
     padding 10px
     background #EBF1F5
     opacity 0.7
+    margin-bottom 0
 
 .handle
   width 160px
@@ -70,8 +77,6 @@ body
 .Spinner2
   display inline-block
 
-.count
-  margin-bottom 10px
 
 .disabled
   pointer-events none
@@ -91,6 +96,68 @@ small-button()
   border-radius 3px
   &:hover
     background-color darken(#f5f8fa, 10%)
+
+// .ResyncButton
+
+.outputPanel
+  position fixed
+  z-index 2
+  top 100px
+  left 50%
+  bottom 100px
+  transform translateX(-50%)
+  width 100%
+  max-width 900px
+  background white
+  box-shadow 0px 2px 50px 5px rgba(0,0,0,0.5)
+  line-height 1.2
+  border-radius 3px
+  flex-direction column
+  display flex
+  display none
+  &.isOpen
+    display flex
+
+  .head
+    padding 10px
+    text-transform uppercase
+    border-radius 3px 3px 0 0
+    flex-grow 0
+    flex-shrink 0
+    display flex
+    align-items center
+    small
+      margin-left 10px
+      font-size 10px
+      opacity 0.6
+      font-weight bold
+
+    button
+      margin-left auto
+      margin-right 0
+      outline none
+      small-button()
+
+  .message
+    padding 10px
+    background #B0CCFF
+    flex-grow 0
+    flex-shrink 0
+
+  .body
+    flex 1 100%
+    font-size 11px
+    font-family monospace
+    white-space pre-wrap
+    padding 10px
+    margin 0
+    background #333
+    color white
+    border-radius 0 0 3px 3px
+    overflow auto
+
+.resync
+  small-button()
 
 .clear
   small-button()

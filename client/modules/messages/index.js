@@ -26,6 +26,12 @@ const SEARCH = 'messages/SEARCH';
 const SEARCH_SUCCESS = 'messages/SEARCH_SUCCESS';
 const SEARCH_FAILURE = 'messages/SEARCH_FAILURE';
 
+const REFRESH_DB = 'messages/REFRESH_DB';
+const REFRESH_DB_SUCCESS = 'messages/REFRESH_DB_SUCCESS';
+const REFRESH_DB_FAILURE = 'messages/REFRESH_DB_FAILURE';
+
+const CLEAR_SYNC_RESULTS = 'messages/CLEAR_SYNC_RESULTS';
+
 const SET_OPTIONS = 'messages/SET_OPTIONS';
 
 const CLEAR_SEARCH = 'messages/CLEAR_SEARCH';
@@ -42,6 +48,14 @@ export const fetch = ({ page, pageSize = PAGE_SIZE }) => ({
 export const searchByPage = ({ page = 1, pageSize = PAGE_SIZE, searchText }) => ({
   type: SEARCH,
   payload: { page, pageSize, searchText },
+});
+
+export const resync = () => ({
+  type: REFRESH_DB,
+});
+
+export const clearSyncResults = () => ({
+  type: CLEAR_SYNC_RESULTS,
 });
 
 export const search = (searchText = '') => {
@@ -157,10 +171,27 @@ const searchMessagesEpic = action$ => {
     });
 };
 
+const refreshDbEpic = (action$) =>
+  action$.ofType(REFRESH_DB)
+    .switchMap(() =>
+      Observable.ajax.get(`${process.env.SERVICE_URL}/refresh-db`)
+        .map(prop('response'))
+        .map(prop('data'))
+        .map(x => ({
+          type: REFRESH_DB_SUCCESS,
+          payload: x,
+        }))
+        .catch(err => Observable.of({
+          type: REFRESH_DB_FAILURE,
+          error: true,
+          payload: err,
+        })))
+
 export const epic = combineEpics(
   resetEpic,
   fetchMessagesEpic,
   searchMessagesEpic,
+  refreshDbEpic,
 );
 
 /* Getters
@@ -168,6 +199,8 @@ export const epic = combineEpics(
 export const getMessages = state => state.getIn(['messages', 'messages']);
 
 export const getMeta = state => state.getIn(['messages', 'meta']);
+
+export const getSyncResults = state => state.getIn(['messages', 'syncResults']);
 
 // The stored search term. Last thing that was searched for
 export const getSearchTerm = state => state.getIn(['messages', 'searchTerm']);
@@ -224,11 +257,14 @@ const loading = (state = false, action) => {
   switch (action.type) {
     case FETCH:
     case SEARCH:
+    case REFRESH_DB:
       return true;
     case FETCH_SUCCESS:
     case SEARCH_SUCCESS:
+    case REFRESH_DB_SUCCESS:
     case FETCH_FAILURE:
     case SEARCH_FAILURE:
+    case REFRESH_DB_FAILURE:
       return false;
     default:
       return state;
@@ -261,10 +297,30 @@ const searchTerm = (state = '', action) => {
   }
 };
 
+const SyncResults = Record({
+  message: '',
+  stdout: '',
+  stderr: '',
+});
+
+const syncResults = (state = SyncResults(), action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case REFRESH_DB_SUCCESS:
+      return SyncResults(payload);
+    case CLEAR_SYNC_RESULTS:
+      return SyncResults();
+    default:
+      return state;
+  }
+};
+
 export default combineReducers({
   messages,
   loading,
   options,
   meta,
   searchTerm,
+  syncResults,
 });

@@ -18,9 +18,8 @@ data:
 	@mkdir -p ./data
 
 sync_backup: data
-	@echo "Preparing to backup directory:"
+	@echo "Syncing database from directory:"
 	@echo $(target_path)
-	@sleep 5
 	@rsync -avP $(target_path) ./data
 
 import_and_connect: sync_backup DB_FILEPATH

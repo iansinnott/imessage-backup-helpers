@@ -9,8 +9,11 @@ import { init } from '../modules/app';
 import {
   fetch,
   search,
+  resync,
+  clearSyncResults,
   clearSearch,
   setSearch,
+  getSyncResults,
   getMessageSeq,
   getSearchTerm,
   getLoading,
@@ -78,6 +81,61 @@ const LoadMoreButton = connect(
   );
 });
 
+const ResyncButton = connect(
+  state => ({
+    loading: getLoading(state),
+    results: getSyncResults(state),
+  }),
+  { resync, clearSyncResults }
+)(
+  class extends React.Component {
+    static displayName = 'ResyncButton';
+
+    static propTypes = {
+      resync: T.func.isRequired,
+      loading: T.bool.isRequired,
+    };
+
+    handleResync = () => {
+      if (!confirm(
+        "Resyncing will reload all date from your latest iPhone backup. If you haven't " +
+        "backed up your phone on this computer recently resyncing won't do anything. It " +
+        "won't hurt, but there will be no effect without a recent iPhone backup.\n\nContinue?"
+      )) return;
+
+      this.props.resync();
+    };
+
+    render() {
+      const { message, stdout, stderr } = this.props.results;
+      const isOpen = Boolean(stdout);
+
+      return (
+        <div className={cx('ResyncButton', { disabled: this.props.loading })}>
+          <button className={cx('resync')} onClick={this.handleResync}>
+            Re-sync
+          </button>
+          <div className={cx('outputPanel', { isOpen })}>
+            <div className={cx('head')}>
+              Resync Rsults
+              <small>(Feel free to ignore)</small>
+              <button className={cx('clearSync')} onClick={this.props.clearSyncResults}>
+                Close
+              </button>
+            </div>
+            <div className={cx('message')}>
+              {message}
+            </div>
+            <pre className={cx('body')}>
+              {stdout}
+            </pre>
+          </div>
+        </div>
+      )
+    }
+  }
+)
+
 const messageListState = state => ({
   messages: getMessageSeq(state),
   count: getCount(state),
@@ -95,6 +153,7 @@ const MessageList = connect(messageListState)(props => {
           Showing: <strong>{currentCount}</strong> of{' '}
           <strong>{count}</strong>
         </div>
+        <ResyncButton />
       </div>
       {messages.map(m => (
         <Message key={m.get('rowid')} searchTerm={searchTerm} message={m} />
