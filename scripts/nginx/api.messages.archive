@@ -1,0 +1,11 @@
+# The API server. Traffic is simply proxied to the node server. This simple
+# setup worked fine in my testing, but if more is needed pm2 has a page about
+# just this use case: http://pm2.keymetrics.io/docs/tutorials/pm2-nginx-production-setup
+server {
+    listen       80;
+    server_name  api.messages.archive;
+
+    location / {
+      proxy_pass http://127.0.0.1:1118;
+    }
+}

@@ -1,0 +1,11 @@
+# The static file server. Files live at /opt/imessage-service/dist and are
+# simply the built JS files from running webpack
+server {
+   listen       80;
+   server_name  messages.archive;
+
+    location / {
+        root   /opt/imessage-service/dist;
+        try_files $uri $uri/index.html $uri.html =404;
+    }
+}
