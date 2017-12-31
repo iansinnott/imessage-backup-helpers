@@ -30,6 +30,8 @@ const SET_OPTIONS = 'messages/SET_OPTIONS';
 
 const CLEAR_SEARCH = 'messages/CLEAR_SEARCH';
 
+const NOOP = 'messages/NOOP';
+
 /* Actions
  * ======================================================================= */
 export const fetch = ({ page, pageSize = PAGE_SIZE }) => ({
@@ -42,10 +44,17 @@ export const searchByPage = ({ page = 1, pageSize = PAGE_SIZE, searchText }) => 
   payload: { page, pageSize, searchText },
 });
 
-export const search = searchText => ({
-  type: SEARCH,
-  payload: { page: 1, pageSize: PAGE_SIZE, searchText },
-});
+export const search = (searchText = '') => {
+  if (searchText.length < 2) {
+    console.warn('Search must be at least 2 characters.');
+    return { type: NOOP };
+  }
+
+  return {
+    type: SEARCH,
+    payload: { page: 1, pageSize: PAGE_SIZE, searchText },
+  };
+};
 
 export const setSearch = text => ({
   type: SET_OPTIONS,
