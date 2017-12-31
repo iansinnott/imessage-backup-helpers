@@ -35,9 +35,14 @@ export const fetch = ({ page, pageSize = PAGE_SIZE }) => ({
   payload: { page, pageSize },
 });
 
-export const search = ({ page = 1, pageSize = PAGE_SIZE }) => ({
+export const searchByPage = ({ page = 1, pageSize = PAGE_SIZE, searchText }) => ({
   type: SEARCH,
-  payload: { page, pageSize },
+  payload: { page, pageSize, searchText },
+});
+
+export const search = searchText => ({
+  type: SEARCH,
+  payload: { page: 1, pageSize: PAGE_SIZE, searchText },
 });
 
 export const setSearch = text => ({
@@ -100,9 +105,41 @@ const fetchMessagesEpic = action$ => {
     });
 };
 
+const searchMessagesEpic = action$ => {
+  const [valid, invalid] = action$
+    .ofType(SEARCH)
+    .map(prop('payload'))
+    .partition(({ page, pageSize, searchText }) => page && pageSize && searchText); // Make sure we have page and pageSize
+
+  return valid
+    .merge(
+      invalid
+        .do(() => console.warn('Must fetch with page and pageSize as well as searchText in payload'))
+        .ignoreElements()
+    )
+    .mergeMap(({ page, pageSize, searchText }) => {
+      const url = getUrl(`${process.env.SERVICE_URL}/rest/search`, { page, pageSize, q: searchText });
+      return Observable.ajax.get(url)
+        .map(prop('response'))
+        .map(evolve({
+          data: processMessages
+        }))
+        .map(payload => ({
+          type: SEARCH_SUCCESS,
+          payload,
+        }))
+        .catch(err => Observable.of({
+          type: SEARCH_FAILURE,
+          error: true,
+          payload: err
+        }));
+    });
+};
+
 export const epic = combineEpics(
   initEpic,
   fetchMessagesEpic,
+  searchMessagesEpic,
 );
 
 /* Getters
