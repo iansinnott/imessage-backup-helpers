@@ -2,6 +2,7 @@ import * as React from 'react';
 import T from 'prop-types';
 import { Map } from 'immutable';
 import reactStringReplace from 'react-string-replace';
+import { format } from 'date-fns';
 
 import { connect } from 'react-redux';
 import { init } from '../modules/app';
@@ -35,6 +36,16 @@ const Message = ({ searchTerm, message: m }) => {
 
   return (
     <div className={cx('Message')}>
+      <div className={cx('meta')}>
+        <div className={cx('handle')}>
+          {m.get('is_from_me') ? 'Sent by you' : (
+            [<strong key='handle'>From: </strong>, m.get('handle')]
+          )}
+        </div>
+        <div style={{ marginLeft: 20 }} className={cx('date')}>
+          <strong>On:</strong> {format(m.get('date'), 'YYYY-MM-DD')} at {format(m.get('date'), 'h:mm a')}
+        </div>
+      </div>
       <div className={cx('text')}>{renderText}</div>
     </div>
   );
