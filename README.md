@@ -53,3 +53,12 @@ To redeploy after any code change to the server or client, simply `git pull` and
 make redeploy
 ```
 
+## Room for improvement
+
+* Search on sender, self and date range
+* Show all message (if so desired)
+* Support SQLite full text search: https://www.sqlite.org/fts5.html
+* Contacts. They aren't stored in the imessage db which means linking names to numbers would have to be done through a Contacts.app integration
+* A more concrete idea of who a message is from. Right now I'm only differentiating on is_from_me. But adding a more sophisticated case statement to the all_messages view would be useful
+* Threading. Basically just rebuild the imessage UI but with better search?
+  * (Probably _wont't_ do this since imessage does have search)
