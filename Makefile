@@ -59,7 +59,7 @@ nginx_config:
 	@sudo nginx -t
 	@sudo nginx -s reload
 
-deploy: import_and_connect deploy_static nginx_config
+deploy: bootstrap_db deploy_static nginx_config
 	@npm install -g pm2
 	@NODE_ENV=production PORT=1118 pm2 start server/index.js
 
