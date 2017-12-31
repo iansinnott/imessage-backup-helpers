@@ -44,7 +44,7 @@ deploy_static: build_prod
 	@sudo mkdir -p /opt/imessage-service
 	@sudo mkdir -p /opt/imessage-service/log
 	@sudo rm -rf /opt/imessage-service/dist/*
-	@sudo cp -R $(CURDIR)/imessage-backup-helpers/dist /opt/imessage-service/dist
+	@sudo cp -R $(CURDIR)/dist /opt/imessage-service/dist
 
 # Using port 80 for ease of use for the end user. I don't want anyone to have to
 # type the port number in, since this is designed for a non-technical audience
@@ -59,7 +59,7 @@ nginx_config:
 	@sudo nginx -t
 	@sudo nginx -s reload
 
-deploy: deploy_static nginx_config
+deploy: import_and_connect deploy_static nginx_config
 	@npm install -g pm2
 	@NODE_ENV=production PORT=1118 pm2 start server/index.js
 
