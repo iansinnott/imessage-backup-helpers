@@ -7,8 +7,10 @@ import { init } from '../modules/app';
 import {
   fetch,
   search,
+  clearSearch,
   setSearch,
   getMessageSeq,
+  getSearchTerm,
   getLoading,
   getSearchText,
   getCount,
@@ -57,9 +59,10 @@ const SearchBox = connect(
   state => ({
     searchText: getSearchText(state),
     loading: getLoading(state),
+    searchTerm: getSearchTerm(state),
   }),
-  { setSearch, search }
-)(({ setSearch, search, searchText, loading }) => {
+  { setSearch, search, clearSearch }
+)(({ searchTerm, setSearch, search, searchText, loading, clearSearch }) => {
   return (
     <form
       className={cx('SearchBox', { disabled: loading })}
@@ -71,6 +74,11 @@ const SearchBox = connect(
         value={searchText}
         onChange={e => setSearch(e.target.value)}
       />
+      {searchTerm && (
+        <button className={cx('clear')} onClick={clearSearch}>
+          Clear Search
+        </button>
+      )}
       {loading && <Spinner className={cx('Spinner')} />}
     </form>
   );

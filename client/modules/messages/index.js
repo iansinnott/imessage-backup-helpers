@@ -28,6 +28,8 @@ const SEARCH_FAILURE = 'messages/SEARCH_FAILURE';
 
 const SET_OPTIONS = 'messages/SET_OPTIONS';
 
+const CLEAR_SEARCH = 'messages/CLEAR_SEARCH';
+
 /* Actions
  * ======================================================================= */
 export const fetch = ({ page, pageSize = PAGE_SIZE }) => ({
@@ -52,10 +54,20 @@ export const setSearch = text => ({
   },
 });
 
+export const clearSearch = () => ({
+  type: CLEAR_SEARCH,
+});
+
 /* Epics
  * ======================================================================= */
-const initEpic = action$ =>
-  action$.ofType(INIT).mapTo({
+
+/**
+ * Reset the message list. This happens on initial app boostrap so there's
+ * something to look at and whenever the search is cleared, since we need to
+ * refetch the list
+ */
+const resetEpic = action$ =>
+  action$.ofType(INIT, CLEAR_SEARCH).mapTo({
     type: FETCH,
     payload: {
       page: 1,
@@ -117,7 +129,7 @@ const searchMessagesEpic = action$ => {
         .do(() => console.warn('Must fetch with page and pageSize as well as searchText in payload'))
         .ignoreElements()
     )
-    .mergeMap(({ page, pageSize, searchText }) => {
+    .switchMap(({ page, pageSize, searchText }) => {
       const url = getUrl(`${process.env.SERVICE_URL}/rest/search`, { page, pageSize, q: searchText });
       return Observable.ajax.get(url)
         .map(prop('response'))
@@ -137,7 +149,7 @@ const searchMessagesEpic = action$ => {
 };
 
 export const epic = combineEpics(
-  initEpic,
+  resetEpic,
   fetchMessagesEpic,
   searchMessagesEpic,
 );
@@ -147,6 +159,9 @@ export const epic = combineEpics(
 export const getMessages = state => state.getIn(['messages', 'messages']);
 
 export const getMeta = state => state.getIn(['messages', 'meta']);
+
+// The stored search term. Last thing that was searched for
+export const getSearchTerm = state => state.getIn(['messages', 'searchTerm']);
 
 export const getCount = createSelector(getMeta, prop('count'));
 
@@ -170,6 +185,8 @@ const messages = (state = OrderedMap(), action) => {
       return payload.data; // Search results overwrite everything
     case FETCH_SUCCESS:
       return state.merge(payload.data); // Just merge for infinite scroll. But also want to avoid duplicates that might arrise from concat
+    case CLEAR_SEARCH:
+      return OrderedMap();
     default:
       return state;
   }
@@ -212,6 +229,21 @@ const options = (state = Map({ searchText: '' }), action) => {
   switch (type) {
     case SET_OPTIONS:
       return state.merge(payload);
+    case CLEAR_SEARCH:
+      return state.set('searchText', '');
+    default:
+      return state;
+  }
+};
+
+const searchTerm = (state = '', action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case SEARCH_SUCCESS:
+      return payload.meta.searchTerm;
+    case CLEAR_SEARCH:
+      return '';
     default:
       return state;
   }
@@ -222,4 +254,5 @@ export default combineReducers({
   loading,
   options,
   meta,
+  searchTerm,
 });
