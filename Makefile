@@ -66,6 +66,7 @@ deploy: bootstrap_db deploy_static nginx_config
 
 # Redeploy after code changes.
 redeploy: bootstrap_db deploy_static
+	git pull
 	NODE_ENV=production PORT=1118 pm2 restart $(service_name)
 
 # Unosed. Will remove later
