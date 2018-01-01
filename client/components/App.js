@@ -9,6 +9,7 @@ import { init } from '../modules/app';
 import {
   fetch,
   search,
+  searchByPage,
   resync,
   clearSyncResults,
   clearSearch,
@@ -62,13 +63,20 @@ const LoadMoreButton = connect(
   state => ({
     lastPage: getLastPage(state),
     loading: getLoading(state),
+    searchTerm: getSearchTerm(state),
   }),
-  { fetch },
-  ({ lastPage, loading }, { fetch }, props) => ({
+  { fetch, searchByPage },
+  ({ lastPage, loading, searchTerm }, { fetch, searchByPage }, props) => ({
     ...props,
     loading,
     loadMore: () => {
-      fetch({ page: lastPage + 1 });
+      const nextPage = lastPage + 1;
+
+      if (searchTerm) {
+        searchByPage({ page: nextPage, searchText: searchTerm });
+      } else {
+        fetch({ page: nextPage });
+      }
     },
   })
 )(({ loading, loadMore }) => {

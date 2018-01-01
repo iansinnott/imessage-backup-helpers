@@ -121,15 +121,8 @@ rest.get('/search', (req, res, next) => {
       offset
     ),
     db.get(
-      `
-        SELECT count(*) as "count" FROM all_messages
-        WHERE text like ?
-        LIMIT ?
-        OFFSET ?;
-      `.trim(),
-      likeQuery,
-      pageSize,
-      offset
+      'SELECT count(*) as "count" FROM all_messages WHERE text like ?;',
+      likeQuery
     ),
   ]))
     .then(([ rows, { count } ]) => res.send({

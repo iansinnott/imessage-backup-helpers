@@ -226,9 +226,12 @@ const messages = (state = OrderedMap(), action) => {
 
   switch (type) {
     case SEARCH_SUCCESS:
-      return payload.data; // Search results overwrite everything
     case FETCH_SUCCESS:
-      return state.merge(payload.data); // Just merge for infinite scroll. But also want to avoid duplicates that might arrise from concat
+      if (payload.meta.page === 1) {
+        return payload.data; // Search results overwrite everything
+      } else {
+        return state.merge(payload.data); // Just merge for infinite scroll. But also want to avoid duplicates that might arrise from concat
+      }
     case CLEAR_SEARCH:
       return OrderedMap();
     default:
